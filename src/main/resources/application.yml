@@ -1,0 +1,22 @@
+"%dev":
+  quarkus:
+    datasource:
+      db-kind: postgresql
+      username: microservice_access
+      password: 123456
+      jdbc:
+        url: jdbc:postgresql://localhost:5432/expenseDb
+    http:
+      access-log:
+        enabled: true
+      ssl-port: 8445
+      port: 0
+      ssl:
+        client-auth: required
+        certificate:
+          key-store-file: META-INF/resources/server.keystore
+          key-store-password: server_password
+          trust-store-file: META-INF/resources/client.truststore
+          trust-store-password: client_password
+    log:
+      level: INFO
