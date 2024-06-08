@@ -1,6 +1,7 @@
 package com.atech.calculator.resource;
 
 import com.atech.calculator.model.Item;
+import com.atech.calculator.model.dto.MonthlySalesDataDTO;
 import com.atech.calculator.service.ItemService;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -11,6 +12,8 @@ import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
+
+import java.util.List;
 
 @Path("/item")
 @Tag(name = "Item Resource", description = "Item REST APIs")
@@ -98,6 +101,13 @@ public class ItemResource {
             // Log the exception details here
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"message\":\"An unexpected error occurred.\"}").build();
         }
+    }
+
+    @GET
+    @Path("/sales/monthly")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<MonthlySalesDataDTO> getMonthlySales() {
+        return itemService.getMonthlySalesForCurrentYear();
     }
 
 }

@@ -26,6 +26,8 @@ public class ProfitService {
         profit.setTotalStaticSpending(countStaticExpenses());
         BigDecimal itemProfit = countItemProfit(profit);
         profit.setProfit(itemProfit.subtract(profit.getTotalStaticSpending()));
+        BigDecimal overallSpending = profit.getTotalNonStaticSpending().add(profit.getTotalStaticSpending());
+        logger.info("Total overall spending: " + overallSpending);
         return profit;
     }
 
