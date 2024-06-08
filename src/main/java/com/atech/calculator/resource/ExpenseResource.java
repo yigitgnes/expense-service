@@ -1,6 +1,7 @@
 package com.atech.calculator.resource;
 
 import com.atech.calculator.model.Expense;
+import com.atech.calculator.model.dto.MonthlySalesDataDTO;
 import com.atech.calculator.service.ExpenseService;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -125,4 +126,20 @@ public class ExpenseResource {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("{\"message\":\"An unexpected error occurred.\"}").build();
         }
     }
+    @GET
+    @Path("/monthly")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getMonthlyExpenseForCurrentYear() {
+        try {
+            List<MonthlySalesDataDTO> monthlySalesDataDTOS = expenseService.getMonthlyExpenseForCurrentYear();
+            if (monthlySalesDataDTOS.isEmpty()) {
+                return Response.status(Response.Status.OK).entity("No record found").build();
+            }
+            return Response.ok(monthlySalesDataDTOS).build();
+        } catch (Exception e) {
+            LOGGER.error("Error fetching data", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal server error").build();
+        }
+    }
+
 }

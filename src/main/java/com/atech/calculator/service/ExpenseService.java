@@ -1,17 +1,30 @@
 package com.atech.calculator.service;
 
 import com.atech.calculator.model.Expense;
+import com.atech.calculator.model.dto.MonthlySalesDataDTO;
 import com.atech.calculator.resource.ExpenseResource;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
-import java.util.List;
+import java.time.Month;
+import java.time.Year;
+import java.time.format.TextStyle;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class ExpenseService {
+
+    private static final int currentYear = Year.now().getValue();
+
+    @PersistenceContext
+    EntityManager entityManager;
 
     private Logger LOGGER = Logger.getLogger(ExpenseService.class);
 
@@ -69,6 +82,57 @@ public class ExpenseService {
                 },
                 NotFoundException::new
         );
+    }
+
+    public List<MonthlySalesDataDTO> getMonthlyExpenseForCurrentYear(){
+        // Get all expenses from the EXPENSE table
+        String queryStr = "SELECT EXTRACT(MONTH FROM e.expenseDate) AS expense_month, SUM(e.price) AS total_price " +
+                "FROM Expense e " +
+                "WHERE EXTRACT(YEAR FROM e.expenseDate) = ?1 " +
+                "GROUP BY EXTRACT(MONTH FROM e.expenseDate) " +
+                "ORDER BY EXTRACT(MONTH FROM e.expenseDate)";
+        Query query = entityManager.createQuery(queryStr);
+        query.setParameter(1, currentYear);
+        List<Object[]> expenseResult = query.getResultList();
+
+        // Get all expenses from the SALE table
+        String queryStr1 = "SELECT EXTRACT(MONTH FROM s.purchaseDate) AS expense_month, SUM(s.purchasePrice) AS total_price " +
+                "FROM Sale s " +
+                "WHERE EXTRACT(YEAR FROM s.purchaseDate) = ?1 " +
+                "GROUP BY EXTRACT(MONTH FROM s.purchaseDate) " +
+                "ORDER BY EXTRACT(MONTH FROM s.purchaseDate)";
+        Query query1 = entityManager.createQuery(queryStr1);
+        query1.setParameter(1, currentYear);
+        List<Object[]> saleResult = query1.getResultList();
+
+        // Combine the results
+        Map<Integer, Long> monthlyExpenses = new HashMap<>();
+
+        // Process expense results
+        for (Object[] result : expenseResult) {
+            int month = ((Number) result[0]).intValue();
+            long price = ((Number) result[1]).longValue();
+            monthlyExpenses.put(month, price);
+        }
+
+        // Process sale results and add to existing monthly expenses
+        for (Object[] result : saleResult) {
+            int month = ((Number) result[0]).intValue();
+            long price = ((Number) result[1]).longValue();
+            monthlyExpenses.merge(month, price, Long::sum);
+        }
+
+        // Convert to list of MonthlySalesDataDTO
+        return monthlyExpenses.entrySet().stream()
+                .map(entry -> {
+                    int month = entry.getKey();
+                    long totalExpense = entry.getValue();
+                    String formattedMonth = Month.of(month)
+                            .getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+                    return new MonthlySalesDataDTO(formattedMonth, totalExpense);
+                })
+                .sorted(Comparator.comparing(dto -> Month.valueOf(dto.getMonth().toUpperCase())))
+                .collect(Collectors.toList());
     }
 
     public boolean deleteExpense(Long id){

@@ -110,4 +110,12 @@ public class ItemResource {
         return itemService.getMonthlySalesForCurrentYear();
     }
 
+    @GET
+    @Path("/earning/monthly")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<MonthlySalesDataDTO> getMonthlyEarnings(){
+        return itemService.getMonthlyEarningForCurrentYear();
+    }
+
+
 }
