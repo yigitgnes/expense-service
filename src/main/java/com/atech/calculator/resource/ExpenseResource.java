@@ -3,18 +3,17 @@ package com.atech.calculator.resource;
 import com.atech.calculator.model.Expense;
 import com.atech.calculator.model.dto.MonthlySalesDataDTO;
 import com.atech.calculator.service.ExpenseService;
+import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriBuilder;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
-import java.net.URI;
 import java.util.List;
 
 @Path("/expense")
@@ -28,21 +27,15 @@ public class ExpenseResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(
-            description = "Fetches all expenses from the database.",
-            summary = "Get Expenses"
-    )
-    public Response getAllExpenses() {
-        try {
-            List<Expense> expenses = expenseService.getAllExpenses();
-            if (expenses.isEmpty()) {
-                return Response.status(Response.Status.OK).entity("No expenses found").build();
-            }
-            return Response.ok(expenses).build();
-        } catch (Exception e) {
-            LOGGER.error("Error fetching all expenses", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal server error").build();
-        }
+    public Response getExpenses(@DefaultValue("1") @QueryParam("page") int page,
+                                @DefaultValue("10") @QueryParam("size") int size) {
+        page = (page < 1) ? 1 : page;
+        size = (size <= 0) ? 10 : size;
+
+        List<Expense> expenses = expenseService.getAllExpensesPaged(page - 1, size);
+        long totalCount = expenseService.countExpenses();
+
+        return Response.ok(new PagedResult<>(expenses, page, size, totalCount)).build();
     }
 
     @GET
@@ -79,10 +72,7 @@ public class ExpenseResource {
     )
     public Response createExpense(@RequestBody Expense expense) {
         Expense createdExpense = expenseService.createExpense(expense);
-        URI createdUri = UriBuilder.fromResource(ExpenseResource.class)
-                .path(String.valueOf(createdExpense.id))
-                .build();
-        return Response.created(createdUri).entity(createdExpense).build();
+        return Response.ok(createdExpense).build();
     }
 
     @PUT
@@ -139,6 +129,20 @@ public class ExpenseResource {
         } catch (Exception e) {
             LOGGER.error("Error fetching data", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Internal server error").build();
+        }
+    }
+
+    public static class PagedResult<T> {
+        public List<T> items;
+        public int page;
+        public int size;
+        public long totalCount;
+
+        public PagedResult(List<T> items, int page, int size, long totalCount) {
+            this.items = items;
+            this.page = page;
+            this.size = size;
+            this.totalCount = totalCount;
         }
     }
 

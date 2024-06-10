@@ -2,7 +2,7 @@ package com.atech.calculator.service;
 
 import com.atech.calculator.model.Expense;
 import com.atech.calculator.model.dto.MonthlySalesDataDTO;
-import com.atech.calculator.resource.ExpenseResource;
+import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -39,6 +39,14 @@ public class ExpenseService {
             LOGGER.error("Error retrieving all expenses: " + e.getMessage(), e);
             throw new Exception("Error retrieving expenses from the database.", e);
         }
+    }
+
+    public List<Expense> getAllExpensesPaged(int page, int size) {
+        return Expense.findAll(Sort.by("expenseDate").descending()).page(Page.of(page, size)).list();
+    }
+
+    public long countExpenses (){
+        return Expense.count();
     }
 
     public Expense getExpenseById(Long id) throws NotFoundException {

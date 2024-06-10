@@ -1,7 +1,6 @@
 package com.atech.calculator.service;
 
 import com.atech.calculator.model.Item;
-import com.atech.calculator.model.Sale;
 import com.atech.calculator.model.dto.MonthlySalesDataDTO;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -12,7 +11,6 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.NotFoundException;
 import org.jboss.logging.Logger;
 
-import java.math.BigDecimal;
 import java.time.Month;
 import java.time.Year;
 import java.time.format.TextStyle;
