@@ -3,7 +3,6 @@ package com.atech.calculator.resource;
 import com.atech.calculator.model.Expense;
 import com.atech.calculator.model.dto.MonthlySalesDataDTO;
 import com.atech.calculator.service.ExpenseService;
-import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
