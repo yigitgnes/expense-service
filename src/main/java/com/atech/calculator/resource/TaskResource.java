@@ -19,7 +19,10 @@ public class TaskResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTasks() {
+    public Response getTasks(@DefaultValue("") @QueryParam("category") String category) {
+        if (!category.isEmpty()){
+            return Response.ok(taskService.getTasksByCategory(category)).build();
+        }
         return Response.ok(taskService.getAllTasks()).build();
     }
 
@@ -52,7 +55,7 @@ public class TaskResource {
 
     @PUT
     @Path("/{id}")
-    public Response updateTask(@RequestBody Task receivedTask, @PathParam("id") Long id) {
+    public Response updateTask(@PathParam("id") Long id, @RequestBody Task receivedTask) {
         if (id == null) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }

@@ -1,24 +1,18 @@
 package com.atech.calculator.model;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
-@Table
+@Table(name = "tasks")
 public class Task extends PanacheEntity {
 
-    public String title;
+    @Column
     public String description;
+    @Column
     @Enumerated(EnumType.STRING)
     public TaskCategory category;
+    @Column
     public boolean completed;
 }
 
-enum TaskCategory {
-    MARKETING,
-    INVENTORY_MANAGEMENT,
-    CUSTOMER_ENGAGEMENT
-}

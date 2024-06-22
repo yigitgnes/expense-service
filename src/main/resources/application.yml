@@ -1,5 +1,8 @@
 "%dev":
   quarkus:
+    hibernate-orm:
+      database:
+        generation: update
     datasource:
       db-kind: postgresql
       username: microservice_access
@@ -12,7 +15,7 @@
       ssl-port: 8445
       port: 0
       ssl:
-        client-auth: required
+        client-auth: none
         certificate:
           key-store-file: META-INF/resources/server.keystore
           key-store-password: server_password
