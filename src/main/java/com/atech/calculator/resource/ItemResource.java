@@ -19,7 +19,7 @@ import java.util.List;
 @Tag(name = "Item Resource", description = "Item REST APIs")
 public class ItemResource {
 
-    private Logger LOGGER = Logger.getLogger(ExpenseResource.class);
+    private final Logger LOGGER = Logger.getLogger(ExpenseResource.class);
     @Inject
     ItemService itemService;
 
@@ -29,8 +29,13 @@ public class ItemResource {
             description = "Returns all the Items saved into the database",
             summary = "Get All Items"
     )
-    public Response getAllItems() throws Exception {
-        return Response.ok(itemService.getAllItems()).build();
+    public Response getAllItems(@DefaultValue("1") @QueryParam("page") int page,
+                                @DefaultValue("10") @QueryParam("size") int size) {
+        page = (page < 1) ? 1 : page;
+        size = (size <= 0) ? 10 : size;
+        List<Item> items = itemService.getAllItemsPaged(page -1, size);
+        long totalCount = itemService.countItems();
+        return Response.ok(new PagedResult<>(items, page, size, totalCount)).build();
     }
 
     @GET
@@ -41,7 +46,7 @@ public class ItemResource {
             summary = "Get Item"
     )
     public Response getItemById(@PathParam("id") Long id){
-        if (id <= 0 || id == null){
+        if (id <= 0 ){
            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid ID provided").build();
         }
         try {
@@ -115,6 +120,20 @@ public class ItemResource {
     @Produces(MediaType.APPLICATION_JSON)
     public List<MonthlySalesDataDTO> getMonthlyEarnings(){
         return itemService.getMonthlyEarningForCurrentYear();
+    }
+
+    public static class PagedResult<T> {
+        public List<T> items;
+        public int page;
+        public int size;
+        public long totalCount;
+
+        public PagedResult(List<T> items, int page, int size, long totalCount) {
+            this.items = items;
+            this.page = page;
+            this.size = size;
+            this.totalCount = totalCount;
+        }
     }
 
 

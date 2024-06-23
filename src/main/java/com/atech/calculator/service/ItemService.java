@@ -2,6 +2,7 @@ package com.atech.calculator.service;
 
 import com.atech.calculator.model.Item;
 import com.atech.calculator.model.dto.MonthlySalesDataDTO;
+import io.quarkus.panache.common.Page;
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -25,7 +26,7 @@ public class ItemService {
     @PersistenceContext
     EntityManager entityManager;
 
-    private Logger LOGGER = Logger.getLogger(ItemService.class);
+    private final Logger LOGGER = Logger.getLogger(ItemService.class);
 
     public List<Item> getAllItems() throws Exception {
         try{
@@ -38,6 +39,14 @@ public class ItemService {
             LOGGER.error("Error retrieving all items: " + e.getMessage(), e);
             throw new Exception("Error retrieving items from the database.", e);
         }
+    }
+
+    public List<Item> getAllItemsPaged(int page, int size){
+        return Item.find("SELECT i FROM Item i JOIN i.sale s ORDER BY s.purchaseDate DESC").page(Page.of(page, size)).list();
+    }
+
+    public long countItems() {
+        return Item.count();
     }
     public Item getItemById(Long id) throws NotFoundException {
         try {
